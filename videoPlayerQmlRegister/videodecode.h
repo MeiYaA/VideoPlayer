@@ -39,10 +39,13 @@ typedef struct PacketQueue{
 } PacketQueue;
 
 class VideoDecode;
+class VideoPlayer;
 
 typedef struct VideoState{
     //一帧
     AVFormatContext *formatCtx;
+    
+    int video_stream, audio_stream;
 
     //视频
     AVCodecContext *videoCodecCtx;
@@ -77,12 +80,27 @@ typedef struct VideoState{
     int audioTargetSampleRate;
 
     uint8_t *audioBuffer; //音频缓冲
+//    DECLARE_ALIGNED(16,uint8_t,audioBuffer) [AVCODEC_MAX_AUDIO_FRAME_SIZE * 4];
     DECLARE_ALIGNED(16,uint8_t,audioSourceBuffer) [AVCODEC_MAX_AUDIO_FRAME_SIZE * 4]; //解码音频缓冲区
 
     struct SwrContext *swrCtx; //用于解码后的音频格式转换
 
     double audioClock; //音频时间
     double videoClock;
+
+    //播放控制
+    bool pause;  //暂停标志
+    bool quit;  //停止
+    bool readFinished;  //视频文件读取完毕
+    bool readThreadFinished;  //读取线程已结束
+    bool videoThreadFinished;  //视频线程已结束
+
+    //跳转相关
+    int seek_req; //跳转标志
+    int64_t seek_pos; //跳转的位置 微秒
+    int seek_flag_audio; //音频线程跳转标志
+    int seek_flag_video; //视频线程跳转标志
+    double seek_time; //跳转时间
 
     VideoDecode *decoder;
 
@@ -92,20 +110,41 @@ class VideoDecode : public QThread
 {
     Q_OBJECT
 public:
-    VideoDecode();
+    VideoDecode(VideoPlayer *vp);
 
-    void startPlay();
+    bool startPlay(QString path);
     void displayVideo(QImage image);
+
+    enum PlayerState
+    {
+        Playing,
+        Pause,
+        Stop
+    };
+    
+    bool play();
+    bool pause();
+    bool stop(bool isWait = false);  //参数表示是否等待所有的线程执行完毕再返回
+
+    int64_t getTotalTime(); //单位微秒
+    double getCurrentTime(); //单位秒
+
+    void seek(int64_t pos);  //拖动进度条
 
 protected:
     void run();   //重载函数
 
 signals:
-    void getOneFrame(QImage);
+    void getOneFrame(QImage);   //获取到一帧发送信号
+//    void sig_totalTime(qint64 duration);   //获取到视频时长发送信号
+    void sig_StateChanged(VideoDecode::PlayerState state);
 
 private:
+    VideoPlayer *mPlayer;
     QString mVideoName;
     VideoState mVideoState;
+
+    PlayerState mPlayerState;   //播放状态
 };
 
 #endif // VIDEODECODE_H
