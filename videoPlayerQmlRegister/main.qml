@@ -11,15 +11,18 @@ Window {
     height: 670
     title: qsTr("Hello World")
 
-    property string path: "/run/media/root/Lstudy/live/mediaServer/movies/test.mkv"
-    property bool pause: false
+    property string path: "/run/media/root/Lstudy/live/mediaServer/movies/大圣归来.mkv"
+    property bool pauseVideo: false
     property bool playing: false
+    property bool firstPlay: false
+    property bool stopVideo: false
 
     Rectangle{
         id: playVideo
         width: parent.width
         height: parent.height
-        VidePlayer{
+        color: "black"
+        VideoPlayer{
             id:player
             anchors.fill: parent
             width: parent.width
@@ -30,8 +33,15 @@ Window {
         MouseArea{
             anchors.fill: parent
             onClicked: {
-                playing = true
-                player.startPlay(path)
+
+                if(!firstPlay)
+                {
+                    playing = true
+                    firstPlay = true
+                    player.startPlay(path)
+                    player.visible = true
+                    stopVideo = false
+                }
                 //                console.log(allController.height)
             }
         }
@@ -63,7 +73,7 @@ Window {
         }
         onSigSliderValue:{
             progressBar.value = currentvalue
-//            console.log(progressBar.value)
+            //            console.log(progressBar.value)
         }
     }
 
@@ -118,7 +128,7 @@ Window {
             anchors.top: parent.top
             from: 0
             to:100
-//            value: 0
+            //            value: 0
 
             background: Rectangle {
                 x: progressBar.leftPadding
@@ -173,18 +183,25 @@ Window {
                 MouseArea{
                     anchors.fill: parent
                     onClicked: {
-
-                        if(pause)
+                        if(!firstPlay)
+                        {
+                            playing = true
+                            firstPlay = true
+                            player.startPlay(path)
+                            player.visible = true
+                            stopVideo = false
+                        }
+                        else if(pauseVideo)
                         {
                             player.play()
-                            pause = false
+                            pauseVideo = false
                             playing = true
                         }
                         else if(playing)
                         {
                             player.pause()
                             playing = false
-                            pause = true
+                            pauseVideo = true
                         }
                     }
                 }
@@ -209,7 +226,17 @@ Window {
                 MouseArea{
                     anchors.fill: parent
                     onClicked: {
-                        player.stop()
+                        if(!stopVideo)
+                        {
+                            stopVideo = true
+                            firstPlay = false
+                            playing = false
+                            player.visible = false
+                            progressBar.value = 0
+                            duation.text = "00:00:00"
+                            timing.text = "00:00:00"
+                            player.stop(true)
+                        }
                     }
                 }
             }

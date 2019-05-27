@@ -51,9 +51,10 @@ void VideoPlayer::play()
     decoder->play();
 }
 
-void VideoPlayer::stop()
+void VideoPlayer::stop(bool wait)
 {
-    decoder->stop(true);
+    mTimer->stop();
+    decoder->stop(wait);
 }
 
 void VideoPlayer::sliderMoved(int position)

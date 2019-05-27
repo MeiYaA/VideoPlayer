@@ -25,7 +25,7 @@ public:
     Q_INVOKABLE void startPlay(QString path);
     Q_INVOKABLE void pause();
     Q_INVOKABLE void play();
-    Q_INVOKABLE void stop();
+    Q_INVOKABLE void stop(bool wait);
 
     Q_INVOKABLE void sliderMoved(int position);
 

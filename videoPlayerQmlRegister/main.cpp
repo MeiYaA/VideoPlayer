@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    qmlRegisterType<VideoPlayer>("Star", 1, 0, "VidePlayer");
+    qmlRegisterType<VideoPlayer>("Star", 1, 0, "VideoPlayer");
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/main.qml"));
