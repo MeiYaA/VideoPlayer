@@ -1,4 +1,5 @@
 QT += quick
+
 CONFIG += c++11
 
 # The following define makes your compiler emit warnings if you use
@@ -14,7 +15,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        videodecode.cpp \
+        videodecoder.cpp \
+        videodefine.cpp \
         videoplayer.cpp
 
 RESOURCES += qml.qrc
@@ -31,8 +33,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    videodecode.h \
+    videodecoder.h \
+    videodefine.h \
     videoplayer.h
 
-LIBS += -lavcodec -lavformat -lavdevice -lavfilter -lavutil -lswresample -lswscale -lpostproc \
-        -lSDL2
+LIBS += -lavcodec -lavformat -lavdevice -lavfilter -lavutil -lswresample -lswscale -lpostproc -lSDL2

@@ -1,79 +1,79 @@
-import QtQuick 2.12
-import QtQuick.Window 2.12
-import Star 1.0
-import QtQuick.Controls.Styles 1.4
+import QtQuick 2.0
 import QtQuick.Controls 2.5
+import Moon 1.0
 
-Window {
-    id:my
-    visible: true
-    width: 1075
-    height: 670
-    title: qsTr("Hello World")
+Rectangle {
+    width: parent.width
+    height: parent.height
+    color: "black"
 
-    property string path: "/run/media/root/Lstudy/live/mediaServer/movies/大圣归来.mkv"
-    property bool pauseVideo: false
-    property bool playing: false
-    property bool firstPlay: false
-    property bool stopVideo: false
+    property bool isPlaying: false
+    property string videoPath: ""
+    property bool isFirstPlay: true
+    property bool volumeOff: false
 
-    Rectangle{
-        id: playVideo
-        width: parent.width
-        height: parent.height
-        color: "black"
-        VideoPlayer{
-            id:player
-            anchors.fill: parent
-            width: parent.width
-            height: parent.height
-            vwidth: parent.width
-            vheight: parent.height
-        }
-        MouseArea{
-            anchors.fill: parent
-            onClicked: {
+    CVideoPlayer{
+        id: cplayer
+        anchors.fill: parent
+    }
 
-                if(!firstPlay)
+    MouseArea{
+        anchors.fill: parent
+        onClicked: {
+            if(isPlaying)
+            {
+                isPlaying = false
+                cplayer.pause();
+            }
+            else
+            {
+                isPlaying = true
+                if(isFirstPlay)
                 {
-                    playing = true
-                    firstPlay = true
-                    player.startPlay(path)
-                    player.visible = true
-                    stopVideo = false
+                    isFirstPlay = false
+                    cplayer.startPlay(videoPath)
+                    cplayer.visible = true
                 }
-                //                console.log(allController.height)
+                else
+                    cplayer.play()
             }
         }
     }
 
     Connections{
-        target: player
+        target: cplayer
         onSigShowTotalTime:
         {
-            console.log(player.showTotalTime())
-            duation.text = player.showTotalTime()
+            duation.text = totalTime
         }
     }
 
     Connections{
-        target: player
+        target: cplayer
         onSigShowCurrentTime:
         {
-            //            console.log(player.showCurrentTime())
-            timing.text = player.showCurrentTime()
+            timing.text = currentTime
         }
     }
 
     Connections{
-        target: player
+        target: cplayer
+        onSigVideoIsOver:
+        {
+            cplayer.stop();
+            isPlaying = false
+            isFirstPlay = true;
+            cplayer.visible = false;
+        }
+    }
+
+    Connections{
+        target: cplayer
         onSigSliderTotalValue:{
             progressBar.to = value
-            console.log(progressBar.to)
         }
-        onSigSliderValue:{
+        onSigSliderCurrentValue:{
             progressBar.value = currentvalue
-            //            console.log(progressBar.value)
         }
     }
 
@@ -88,33 +88,33 @@ Window {
             anchors.fill: parent
             hoverEnabled: true
             onEntered:{
-                allController.visible = true
+                playerBottom.visible = true
             }
             onExited: {
-                timer.start()
+                showBottonTimer.start()
             }
         }
     }
 
     Timer{
-        id:timer
+        id:showBottonTimer
         interval: 5000;
         running: true;
         repeat: true
         onTriggered:{
-            allController.visible = false
+            playerBottom.visible = false
         }
     }
 
     Connections{
         target: progressBar
         onMoved:{
-            player.sliderMoved(progressBar.value)
+            cplayer.sliderMoved(progressBar.value)
         }
     }
 
     Rectangle{
-        id: allController
+        id: playerBottom
         color: "#DDDDDD"
         width: parent.width
         height: parent.height * 1 / 18
@@ -122,13 +122,12 @@ Window {
         visible: true
 
         Slider{
-            id:progressBar
+            id: progressBar
             width: parent.width
             height: parent.height * 2 / 5
             anchors.top: parent.top
             from: 0
-            to:100
-            //            value: 0
+            to: 100
 
             background: Rectangle {
                 x: progressBar.leftPadding
@@ -157,112 +156,94 @@ Window {
                 height: 15;
                 radius: 12;
             }
-
         }
 
         Rectangle{
-            id:controller
-            //            color: "#DDDDDD"
+            id: controllerButtons
             width: parent.width
             height: parent.height * 3 / 5
             anchors.top: progressBar.bottom
 
             Rectangle{
-                id:play
+                id: playOrPause
                 width: parent.height
                 height: parent.height
                 anchors.left: parent.left
-                //                anchors.leftMargin: 10
-                //            color: "green"
                 Image {
                     width: parent.height
                     height: parent.height
                     anchors.fill: parent
-                    source: playing ? "file:///root/VideoPlayer/videoPlayerQmlRegister/controller/pause.png" : "file:///root/VideoPlayer/videoPlayerQmlRegister/controller/play.png"
+                    source: isPlaying ? "./controller/pause.png" :
+                                        "./controller/play.png"
                 }
                 MouseArea{
                     anchors.fill: parent
                     onClicked: {
-                        if(!firstPlay)
+                        if(isPlaying)
                         {
-                            playing = true
-                            firstPlay = true
-                            player.startPlay(path)
-                            player.visible = true
-                            stopVideo = false
+                            isPlaying = false
+                            cplayer.pause();
                         }
-                        else if(pauseVideo)
+                        else
                         {
-                            player.play()
-                            pauseVideo = false
-                            playing = true
-                        }
-                        else if(playing)
-                        {
-                            player.pause()
-                            playing = false
-                            pauseVideo = true
+                            isPlaying = true
+                            if(isFirstPlay)
+                            {
+                                isFirstPlay = false
+                                cplayer.startPlay(videoPath);
+                                cplayer.visible = true
+                            }
+                            else
+                               cplayer.play()
                         }
                     }
                 }
             }
 
             Rectangle{
-                id:stop
+                id: stop
                 width: parent.height
                 height: parent.height
-
-                anchors.left: play.right
+                anchors.left: playOrPause.right
                 anchors.leftMargin: 20
-                //            color: "green"
 
                 Image {
                     width: parent.height
                     height: parent.height
                     anchors.fill: parent
-                    source: "file:///root/VideoPlayer/videoPlayerQmlRegister/controller/stop.png"
+                    source: "./controller/stop.png"
                 }
-
                 MouseArea{
                     anchors.fill: parent
                     onClicked: {
-                        if(!stopVideo)
-                        {
-                            stopVideo = true
-                            firstPlay = false
-                            playing = false
-                            player.visible = false
-                            progressBar.value = 0
-                            duation.text = "00:00:00"
-                            timing.text = "00:00:00"
-                            player.stop(true)
-                        }
+                        isFirstPlay = true
+                        isPlaying = false
+                        progressBar.value = 0
+                        duation.text = "00:00:00"
+                        timing.text = "00:00:00"
+                        cplayer.stop()
+                        cplayer.visible = false
                     }
                 }
             }
-
             Rectangle{
-                id:next
+                id: nextVideo
                 width: parent.height
                 height: parent.height
-
                 anchors.left: stop.right
                 anchors.leftMargin: 20
-                //            color: "green"
                 Image {
                     width: parent.height
                     height: parent.height
                     anchors.fill: parent
-                    source: "file:///root/VideoPlayer/videoPlayerQmlRegister/controller/next.png"
+                    source: "./controller/next.png"
                 }
             }
-
             Rectangle{
-                id:time
+                id: playTime
                 width: 4 * parent.height
                 height: parent.height
-
-                anchors.left: next.right
+                anchors.left: nextVideo.right
                 anchors.leftMargin: 20
 
                 Text {
@@ -272,7 +253,7 @@ Window {
                 }
 
                 Text {
-                    id:slash
+                    id: slash
                     text: " / "
                     anchors.left: timing.right
                     anchors.verticalCenter: parent.verticalCenter
@@ -290,15 +271,13 @@ Window {
                 id:fullScreen
                 width: parent.height
                 height: parent.height
-
                 anchors.right: parent.right
                 anchors.rightMargin: 10
-                //            color: "green"
                 Image {
                     width: parent.height
                     height: parent.height
                     anchors.fill: parent
-                    source: "file:///root/VideoPlayer/videoPlayerQmlRegister/controller/fullScreen.png"
+                    source: "./controller/fullScreen.png"
                 }
             }
 
@@ -306,15 +285,13 @@ Window {
                 id:star
                 width: parent.height
                 height: parent.height
-
                 anchors.right: fullScreen.left
                 anchors.rightMargin: 20
-                //            color: "green"
                 Image {
                     width: parent.height
                     height: parent.height
                     anchors.fill: parent
-                    source: "file:///root/VideoPlayer/videoPlayerQmlRegister/controller/star.png"
+                    source: "./controller/star.png"
                 }
             }
 
@@ -322,10 +299,8 @@ Window {
                 id:voiceController
                 width: 4 * parent.height
                 height: parent.height
-
                 anchors.right: star.left
                 anchors.rightMargin: 20
-                //            color: "green"
 
                 Slider{
                     id:voiceBar
@@ -367,6 +342,17 @@ Window {
 
             }
 
+            Connections{
+                target: voiceBar
+                onMoved:{
+                    if(voiceBar.value === 0)
+                        volumeOff = true
+                    else
+                        volumeOff = false
+                    cplayer.voiceSliderMoved(voiceBar.value)
+                }
+            }
+
             Rectangle{
                 id:voice
                 width: parent.height
@@ -377,10 +363,27 @@ Window {
                     width: voice.height
                     height: parent.height
                     anchors.fill: parent
-                    source: "file:///root/VideoPlayer/videoPlayerQmlRegister/controller/volumeUp.png"
+                    source: volumeOff ? "./controller/volumeOff.png" : "./controller/volumeUp.png"
+                }
+
+                MouseArea{
+                    anchors.fill: parent
+                    onClicked: {
+                        volumeOff = !volumeOff
+                        if(volumeOff)
+                        {
+                            voiceBar.value = 0
+                            cplayer.voiceSliderMoved(0)
+                        }
+                        else
+                        {
+                            voiceBar.value = 50
+                            cplayer.voiceSliderMoved(50)
+                        }
+                    }
                 }
             }
         }
-    }
 
+    }
 }

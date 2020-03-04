@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>VideoPlayer.qml</file>
+        <file>controller/fullScreen.png</file>
+        <file>controller/left.png</file>
+        <file>controller/next.png</file>
+        <file>controller/pause.png</file>
+        <file>controller/play.png</file>
+        <file>controller/right.png</file>
+        <file>controller/star.png</file>
+        <file>controller/stop.png</file>
+        <file>controller/volumeOff.png</file>
+        <file>controller/volumeUp.png</file>
+    </qresource>
+</RCC>

@@ -1,6 +1,6 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <videoplayer.h>
+#include "videoplayer.h"
 
 int main(int argc, char *argv[])
 {
@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    qmlRegisterType<VideoPlayer>("Star", 1, 0, "VideoPlayer");
+    qmlRegisterType<VideoPlayer>("Moon", 1, 0, "CVideoPlayer");
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/main.qml"));
